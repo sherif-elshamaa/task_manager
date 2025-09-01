@@ -1,0 +1,86 @@
+node_modules
+npm-debug.log
+dist
+coverage
+.nyc_output
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Git
+.git
+.gitignore
+
+# Documentation
+README.md
+*.md
+docs/
+
+# Config files
+.eslintrc.js
+.prettierrc
+eslint.config.mjs
+jest.config.js
+tsconfig.json
+tsconfig.build.json
+
+# Test files
+test/
+**/*.spec.ts
+**/*.test.ts
+
+# Development tools
+.vscode/
+.idea/
+
+# Logs
+logs
+*.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+.nyc_output/
+
+# Dependency directories
+node_modules/
+
+# Optional npm cache directory
+.npm
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# dotenv environment variables file
+.env
+
+# Build artifacts
+dist/
+build/
+
+# Monitoring and load testing
+monitoring/
+loadtest/
+
+# Infrastructure files (not needed in container)
+infra/
+k8s/
+scripts/st
+docs
+monitoring/grafana/data
+monitoring/prometheus/data

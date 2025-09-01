@@ -1,0 +1,40 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  # - "first_rules.yml"
+  # - "second_rules.yml"
+
+scrape_configs:
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Task Manager API
+  - job_name: 'task-manager-api'
+    static_configs:
+      - targets: ['host.docker.internal:3000']
+    metrics_path: '/v1/monitoring/metrics'
+    scrape_interval: 10s
+    scrape_timeout: 5s
+    honor_labels: true
+    
+    # Add custom labels
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        regex: '([^:]+)(?::\d+)?'
+        replacement: '${1}'
+      - source_labels: [__address__]
+        target_label: service
+        replacement: 'task-manager-api'
+
+  # Node.js application metrics
+  - job_name: 'nodejs'
+    static_configs:
+      - targets: ['host.docker.internal:3000']
+    metrics_path: '/v1/monitoring/metrics'
+    scrape_interval: 15s
+    scrape_timeout: 10s

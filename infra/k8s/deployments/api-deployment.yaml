@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+  namespace: default
+  labels:
+    app: api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      labels:
+        app: api
+    spec:
+      containers:
+        - name: api
+          image: your-registry/task-manager-api:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+          envFrom:
+            - secretRef:
+                name: api-secrets
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: PORT
+              value: "3000"
+            # If you use Jaeger all-in-one locally, keep default endpoint:
+            - name: JAEGER_ENDPOINT
+              value: "http://jaeger-collector.monitoring:14268/api/traces"
+            # Optional explicit CORS origins
+            - name: CORS_ORIGINS
+              value: "*"
+          readinessProbe:
+            httpGet:
+              path: /v1/monitoring/health
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /v1/monitoring/health
+              port: 3000
+            initialDelaySeconds: 15
+            periodSeconds: 20

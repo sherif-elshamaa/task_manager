@@ -1,0 +1,13 @@
+config:
+  target: "http://localhost:3000"
+  phases:
+    - duration: 60
+      arrivalRate: 5
+  defaults:
+    headers:
+      Content-Type: application/json
+scenarios:
+  - name: health-check
+    flow:
+      - get:
+          url: "/v1/monitoring/health"
