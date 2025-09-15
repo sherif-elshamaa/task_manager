@@ -7,6 +7,7 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { Exclude } from 'class-transformer';
 import { User } from './user.entity';
 import { Tenant } from './tenant.entity';
 
@@ -37,6 +38,7 @@ export class RefreshToken {
   tenant!: Tenant;
 
   @Column({ type: 'text' })
+  @Exclude()
   token_hash!: string;
 
   @Column({ type: 'boolean', default: false })

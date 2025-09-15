@@ -75,6 +75,7 @@ export class TasksService {
     projectId: string;
     status?: string;
     priority?: string;
+    assignedTo?: string;
     search?: string;
     page?: number;
     limit?: number;
@@ -84,6 +85,7 @@ export class TasksService {
       projectId,
       status,
       priority,
+      assignedTo,
       search,
       page = 1,
       limit = 20,
@@ -104,6 +106,9 @@ export class TasksService {
     }
     if (priority) {
       qb.andWhere('t.priority = :priority', { priority });
+    }
+    if (assignedTo) {
+      qb.andWhere('t.assigned_to = :assignedTo', { assignedTo });
     }
     if (search) {
       qb.andWhere('t.title ILIKE :search', { search: `%${search}%` });

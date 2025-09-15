@@ -3,3 +3,4 @@ dist
 .env
 .env.test
 .github
+claude_memory

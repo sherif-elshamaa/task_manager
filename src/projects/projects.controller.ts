@@ -70,16 +70,20 @@ export class ProjectsController {
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
   @ApiQuery({ name: 'search', required: false, type: String })
+  @ApiQuery({ name: 'workspace', required: false, type: String })
+  @ApiQuery({ name: 'visibility', required: false, enum: ['private', 'workspace', 'tenant'] })
   @ApiPaginatedResponse(ProjectResponseDto, 'List of projects')
   findAll(
     @CurrentUser() user: AuthenticatedUser,
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 10,
     @Query('search') search?: string,
+    @Query('workspace') workspace?: string,
+    @Query('visibility') visibility?: 'private' | 'workspace' | 'tenant',
   ) {
     return this.projectsService.findAll({
       tenantId: user.tenantId,
-      query: { page, limit, search },
+      query: { page, limit, search, workspace, visibility },
     });
   }
 

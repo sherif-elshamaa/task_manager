@@ -2,6 +2,7 @@ import {
   Repository,
   FindOptionsWhere,
   FindOptionsOrder,
+  FindOptionsRelations,
   ObjectLiteral,
 } from 'typeorm';
 
@@ -44,14 +45,16 @@ export async function findAndCountByTenant<T extends ObjectLiteral>(
     skip?: number;
     take?: number;
     order?: FindOptionsOrder<T>;
+    relations?: FindOptionsRelations<T>;
   },
   tenantKey = 'tenant_id',
 ): Promise<[T[], number]> {
-  const { where = {}, skip, take, order } = options;
+  const { where = {}, skip, take, order, relations } = options;
   return repo.findAndCount({
     where: withTenant(where, tenantId, tenantKey),
     skip,
     take,
     order,
+    relations,
   });
 }

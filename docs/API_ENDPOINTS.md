@@ -54,8 +54,27 @@ Note: If you want unauthenticated probes, add `@Public()` or guard exclusions.
 **Response:**
 ```typescript
 {
-  access_token: string;
-  refresh_token: string;
+  access_token: string;        // JWT access token
+  refresh_token: string;       // UUID refresh token
+  expires_in: number;          // Token expiration in seconds (900)
+  user: {                      // Expanded user data with tenant info
+    user_id: string;
+    email: string;
+    first_name: string;
+    last_name: string;
+    roles: string[];           // Array format: ["member"]
+    is_active: boolean;
+    tenant: {
+      tenant_id: string;
+      name: string;
+      plan: string;
+      status: string;
+    };
+    created_at: string;        // ISO 8601 format
+    updated_at: string;
+    last_login?: string;
+    metadata?: Record<string, any>;
+  };
 }
 ```
 
@@ -76,29 +95,35 @@ Note: If you want unauthenticated probes, add `@Public()` or guard exclusions.
 **Response:**
 ```typescript
 {
-  tenant: {
-    tenant_id: string;
-    name: string;
-    plan: string;
-    status: string;
-    created_at: Date;
-    updated_at: Date;
-  };
-  user: {
+  access_token: string;        // JWT access token
+  refresh_token: string;       // UUID refresh token
+  expires_in: number;          // Token expiration in seconds (900)
+  user: {                      // Expanded owner user data with tenant info
     user_id: string;
-    tenant_id: string;
+    email: string;
     first_name: string;
     last_name: string;
-    email: string;
-    role: 'owner' | 'admin' | 'member';
+    roles: string[];           // Array format: ["owner"]
     is_active: boolean;
-    last_login?: Date;
+    tenant: {
+      tenant_id: string;
+      name: string;
+      plan: string;
+      status: string;
+    };
+    created_at: string;        // ISO 8601 format
+    updated_at: string;
+    last_login?: string;
     metadata?: Record<string, any>;
-    created_at: Date;
-    updated_at: Date;
   };
-  access_token: string;
-  refresh_token: string;
+  tenant: {                    // Created tenant details
+    tenant_id: string;
+    name: string;
+    plan: string;             // "free" for new signups
+    status: string;           // "active" for new tenants
+    created_at: string;
+    updated_at: string;
+  };
 }
 ```
 
@@ -113,8 +138,9 @@ Note: If you want unauthenticated probes, add `@Public()` or guard exclusions.
 **Response:**
 ```typescript
 {
-  access_token: string;
-  refresh_token: string;
+  access_token: string;        // New JWT access token
+  refresh_token: string;       // New UUID refresh token
+  expires_in: number;          // Token expiration in seconds (900)
 }
 ```
 
@@ -124,8 +150,17 @@ Note: If you want unauthenticated probes, add `@Public()` or guard exclusions.
 {
   user_id: string;
   email: string;
-  tenant_id: string;
-  roles: string[];
+  first_name: string;
+  last_name: string;
+  roles: string[];             // Array format: ["member"]
+  is_active: boolean;
+  tenant: {                    // Expanded tenant information
+    tenant_id: string;
+    name: string;
+    plan: string;
+    status: string;
+  };
+  last_login?: string;         // ISO 8601 format
 }
 ```
 
@@ -277,7 +312,31 @@ Note: If you want unauthenticated probes, add `@Public()` or guard exclusions.
 ```
 
 ### POST `/v1/users` — Protected + Roles: `admin`
-**Request Body:** Implementation specific
+**Request Body:**
+```typescript
+{
+  email: string;               // Required, valid email format
+  first_name: string;          // Required, non-empty string
+  last_name?: string;          // Optional, string
+  role?: string;               // Optional, defaults to 'member'
+  password: string;            // Required, 8-128 characters
+}
+```
+
+**Response:**
+```typescript
+{
+  user_id: string;
+  tenant_id: string;
+  first_name: string;
+  last_name?: string;
+  email: string;
+  role: 'owner' | 'admin' | 'member';
+  is_active: boolean;
+  created_at: string;          // ISO 8601 format
+  updated_at: string;
+}
+```
 
 ### GET `/v1/users` — Protected + Roles: `admin`
 **Query Parameters:**
@@ -375,8 +434,17 @@ Note: If you want unauthenticated probes, add `@Public()` or guard exclusions.
   tenant_id: string;
   name: string;
   description?: string;
-  created_by: string;
-  created_at: Date;
+  is_archived: boolean;             // Default: false
+  creator: {                        // Expanded creator information
+    user_id: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+    is_active: boolean;
+    role: string;
+  };
+  created_at: string;               // ISO 8601 format
+  updated_at: string;
 }
 ```
 
@@ -433,11 +501,62 @@ Note: If you want unauthenticated probes, add `@Public()` or guard exclusions.
 **Response:**
 ```typescript
 {
-  tenant_id: string;
+  items: Array<{
+    user: {                         // Expanded user information
+      user_id: string;
+      first_name: string;
+      last_name: string;
+      email: string;
+      is_active: boolean;
+      role: string;
+    };
+    role: string;                   // Workspace role (owner, admin, member)
+    joined_at: string;              // ISO 8601 format
+  }>;
+}
+```
+
+### PATCH `/v1/workspaces/:id/archive` — Protected
+**Response:**
+```typescript
+{
   workspace_id: string;
-  user_id: string;
-  role: string;
-  joined_at: Date;
+  tenant_id: string;
+  name: string;
+  description?: string;
+  is_archived: boolean;             // true after archiving
+  creator: {
+    user_id: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+    is_active: boolean;
+    role: string;
+  };
+  created_at: string;
+  updated_at: string;
+}
+```
+
+### PATCH `/v1/workspaces/:id/unarchive` — Protected
+**Response:**
+```typescript
+{
+  workspace_id: string;
+  tenant_id: string;
+  name: string;
+  description?: string;
+  is_archived: boolean;             // false after unarchiving
+  creator: {
+    user_id: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+    is_active: boolean;
+    role: string;
+  };
+  created_at: string;
+  updated_at: string;
 }
 ```
 
@@ -458,13 +577,28 @@ Note: If you want unauthenticated probes, add `@Public()` or guard exclusions.
 ```typescript
 {
   project_id: string;
-  workspace_id: string | null;
   name: string;
-  description?: string | null;
+  description?: string;
   visibility: 'private' | 'workspace' | 'tenant';
-  created_by: string;
-  created_at: Date;
-  updated_at: Date;
+  workspace?: {                     // Expanded workspace information (if assigned)
+    workspace_id: string;
+    name: string;
+    description?: string;
+    is_archived: boolean;
+  };
+  creator: {                        // Expanded creator information
+    user_id: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+    is_active: boolean;
+    role: string;
+  };
+  created_at: string;               // ISO 8601 format
+  updated_at: string;
+  task_count?: number;              // Total number of tasks
+  completed_task_count?: number;    // Number of completed tasks
+  high_priority_task_count?: number; // Number of high priority tasks
 }
 ```
 
@@ -544,7 +678,7 @@ Note: If you want unauthenticated probes, add `@Public()` or guard exclusions.
   assigned_to?: string;             // Optional, valid UUID
   start_date?: string;              // Optional, ISO date string
   due_date?: string;                // Optional, ISO date string
-  estimate_minutes?: number;        // Optional, 1-10080 (1 week max)
+  estimated_hours?: number;         // Optional, estimated hours for task
 }
 ```
 
@@ -552,31 +686,73 @@ Note: If you want unauthenticated probes, add `@Public()` or guard exclusions.
 ```typescript
 {
   task_id: string;
-  project_id: string;
-  tenant_id: string;
   title: string;
-  description?: string | null;
+  description?: string;
   status: 'todo' | 'in_progress' | 'done' | 'archived';
   priority: 'low' | 'medium' | 'high' | 'critical';
-  assigned_to?: string | null;
-  attachments?: Array<{
-    key: string;
+  project: {                        // Expanded project information
+    project_id: string;
+    name: string;
+    description?: string;
+    visibility: 'private' | 'workspace' | 'tenant';
+    workspace?: {
+      workspace_id: string;
+      name: string;
+      description?: string;
+      is_archived: boolean;
+    };
+  };
+  assignee?: {                      // Expanded assignee information (if assigned)
+    user_id: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+    is_active: boolean;
+    role: string;
+  };
+  creator: {                        // Expanded creator information
+    user_id: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+    is_active: boolean;
+    role: string;
+  };
+  updater?: {                       // Expanded updater information (if different from creator)
+    user_id: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+    is_active: boolean;
+    role: string;
+  };
+  attachments: Array<{              // Task attachments
     filename: string;
     size: number;
-    mime_type: string;
-  }> | null;
-  start_date?: string | null;
-  due_date?: string | null;
-  estimate_minutes?: number | null;
-  created_by: string;
-  updated_by?: string | null;
-  created_at: Date;
-  updated_at: Date;
+    content_type: string;
+    s3_key: string;
+  }>;
+  start_date?: string;              // ISO date format
+  due_date?: string;                // ISO date format
+  estimated_hours?: number;
+  created_at: string;               // ISO 8601 format
+  updated_at: string;
+  comment_count?: number;           // Number of comments on this task
 }
 ```
 
 ### GET `/v1/projects/:projectId/tasks` — Protected
-**Query Parameters:** Implementation specific
+**Query Parameters:**
+```typescript
+{
+  page?: number;                    // Optional, default: 1
+  limit?: number;                   // Optional, default: 20
+  search?: string;                  // Optional, search in task titles
+  status?: 'todo' | 'in_progress' | 'done' | 'archived';
+  priority?: 'low' | 'medium' | 'high' | 'critical';
+  assigned_to?: string;             // Optional, UUID of assigned user
+}
+```
 
 ### GET `/v1/projects/:projectId/tasks/admin` — Protected + Roles: `admin`
 **Response:** Array of tasks
@@ -595,7 +771,7 @@ Note: If you want unauthenticated probes, add `@Public()` or guard exclusions.
   assigned_to?: string;             // Optional, valid UUID
   start_date?: string;              // Optional, ISO date string
   due_date?: string;                // Optional, ISO date string
-  estimate_minutes?: number;        // Optional, 1-10080
+  estimated_hours?: number;         // Optional, estimated hours for task
 }
 ```
 
@@ -630,12 +806,24 @@ Note: If you want unauthenticated probes, add `@Public()` or guard exclusions.
 ```typescript
 {
   comment_id: string;
-  task_id: string;
-  tenant_id: string;
   text: string;
-  created_by: string;
-  created_at: Date;
-  updated_at: Date;
+  author: {                         // Expanded author information
+    user_id: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+    is_active: boolean;
+    role: string;
+  };
+  task: {                           // Basic task context
+    task_id: string;
+    title: string;
+    status: 'todo' | 'in_progress' | 'done' | 'archived';
+    priority: 'low' | 'medium' | 'high' | 'critical';
+    due_date?: string;
+  };
+  created_at: string;               // ISO 8601 format
+  updated_at: string;
 }
 ```
 
@@ -690,7 +878,8 @@ Note: If you want unauthenticated probes, add `@Public()` or guard exclusions.
 ```typescript
 {
   email: string;                    // Required, valid email
-  workspaceId: string;              // Required, valid UUID
+  resource_type: 'workspace';       // Required, resource type
+  resource_id: string;              // Required, valid UUID (workspace or project ID)
   role: 'admin' | 'member';         // Required, enum
 }
 ```
@@ -699,17 +888,33 @@ Note: If you want unauthenticated probes, add `@Public()` or guard exclusions.
 ```typescript
 {
   invite_id: string;
-  tenant_id: string;
   email: string;
-  resource_type: string;
-  resource_id: string;
-  role: string;
-  status: string;
-  invited_by: string;
-  expires_at: Date;
-  accepted_at?: Date;
-  declined_at?: Date;
-  created_at: Date;
+  resource_type: 'workspace' | 'project';
+  role: 'admin' | 'member';
+  status: 'pending' | 'accepted' | 'declined' | 'expired';
+  workspace?: {                     // Expanded workspace information (if workspace invite)
+    workspace_id: string;
+    name: string;
+    description?: string;
+    is_archived: boolean;
+  };
+  project?: {                       // Expanded project information (if project invite)
+    project_id: string;
+    name: string;
+    description?: string;
+    visibility: 'private' | 'workspace' | 'tenant';
+  };
+  inviter: {                        // Expanded inviter information
+    user_id: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+    is_active: boolean;
+    role: string;
+  };
+  expires_at: string;               // ISO 8601 format
+  created_at: string;               // ISO 8601 format
+  accepted_at?: string;             // ISO 8601 format (if accepted)
 }
 ```
 
@@ -717,9 +922,10 @@ Note: If you want unauthenticated probes, add `@Public()` or guard exclusions.
 **Query Parameters:**
 ```typescript
 {
-  offset?: number;                  // Optional, default: 0
-  limit?: number;                   // Optional, default: 10
-  status?: 'pending' | 'accepted' | 'declined';
+  page?: number;                    // Optional, default: 1
+  limit?: number;                   // Optional, default: 20
+  status?: 'pending' | 'accepted' | 'declined' | 'expired';
+  resource_type?: 'workspace' | 'project';
 }
 ```
 

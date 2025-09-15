@@ -9,6 +9,7 @@ import {
   IsUUID,
   IsEnum,
 } from 'class-validator';
+import { WorkspaceBasicDto, UserBasicDto } from '../shared/expanded-response.dto';
 
 export class CreateProjectDto {
   @ApiProperty()
@@ -36,29 +37,38 @@ export class CreateProjectDto {
 }
 
 export class ProjectResponseDto {
-  @ApiProperty()
+  @ApiProperty({ example: '550e8400-e29b-41d4-a716-446655440000' })
   project_id!: string;
 
-  @ApiProperty({ nullable: true })
-  workspace_id!: string | null;
-
-  @ApiProperty()
+  @ApiProperty({ example: 'Mobile App Development' })
   name!: string;
 
-  @ApiProperty({ nullable: true })
-  description?: string | null;
+  @ApiPropertyOptional({ example: 'iOS and Android mobile application' })
+  description?: string;
 
-  @ApiProperty({ enum: ['private', 'workspace', 'tenant'] })
+  @ApiProperty({ example: 'workspace', enum: ['private', 'workspace', 'tenant'] })
   visibility!: 'private' | 'workspace' | 'tenant';
 
-  @ApiProperty()
-  created_by!: string;
+  @ApiPropertyOptional({ type: WorkspaceBasicDto })
+  workspace?: WorkspaceBasicDto;
 
-  @ApiProperty()
-  created_at!: Date;
+  @ApiProperty({ type: UserBasicDto })
+  creator!: UserBasicDto;
 
-  @ApiProperty()
-  updated_at!: Date;
+  @ApiProperty({ example: '2024-01-01T10:00:00.000Z' })
+  created_at!: string;
+
+  @ApiProperty({ example: '2024-01-15T16:45:00.000Z' })
+  updated_at!: string;
+
+  @ApiPropertyOptional({ example: 15, description: 'Total number of tasks in project' })
+  task_count?: number;
+
+  @ApiPropertyOptional({ example: 8, description: 'Number of completed tasks' })
+  completed_task_count?: number;
+
+  @ApiPropertyOptional({ example: 3, description: 'Number of high priority tasks' })
+  high_priority_task_count?: number;
 }
 
 export class PaginatedProjectAdminResponseDto {

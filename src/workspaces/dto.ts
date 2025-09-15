@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsString,
   IsOptional,
@@ -6,6 +6,7 @@ import {
   IsEnum,
   IsNotEmpty,
 } from 'class-validator';
+import { UserBasicDto } from '../shared/expanded-response.dto';
 
 export class CreateWorkspaceDto {
   @ApiProperty({ description: 'Workspace name', example: 'Marketing Team' })
@@ -58,40 +59,43 @@ export class AddMemberDto {
 }
 
 export class WorkspaceResponseDto {
-  @ApiProperty({ description: 'Workspace ID' })
+  @ApiProperty({ description: 'Workspace ID', example: '550e8400-e29b-41d4-a716-446655440000' })
   workspace_id!: string;
 
-  @ApiProperty({ description: 'Tenant ID' })
-  tenant_id!: string;
-
-  @ApiProperty({ description: 'Workspace name' })
+  @ApiProperty({ description: 'Workspace name', example: 'Development Team' })
   name!: string;
 
-  @ApiProperty({ description: 'Workspace description', required: false })
+  @ApiPropertyOptional({ description: 'Workspace description', example: 'Main development workspace' })
   description?: string;
 
-  @ApiProperty({ description: 'Created by user ID' })
-  created_by!: string;
+  @ApiProperty({ description: 'Is workspace archived', example: false })
+  is_archived!: boolean;
 
-  @ApiProperty({ description: 'Creation timestamp' })
-  created_at!: Date;
+  @ApiProperty({ type: UserBasicDto, description: 'User who created this workspace' })
+  creator!: UserBasicDto;
+
+  @ApiProperty({ description: 'Creation timestamp', example: '2024-01-01T10:00:00.000Z' })
+  created_at!: string;
+
+  @ApiProperty({ description: 'Last update timestamp', example: '2024-01-15T16:45:00.000Z' })
+  updated_at!: string;
+
+  @ApiPropertyOptional({ description: 'Number of members in workspace', example: 12 })
+  member_count?: number;
+
+  @ApiPropertyOptional({ description: 'Number of projects in workspace', example: 5 })
+  project_count?: number;
 }
 
 export class WorkspaceMemberResponseDto {
-  @ApiProperty({ description: 'Tenant ID' })
-  tenant_id!: string;
+  @ApiProperty({ type: UserBasicDto, description: 'User information' })
+  user!: UserBasicDto;
 
-  @ApiProperty({ description: 'Workspace ID' })
-  workspace_id!: string;
-
-  @ApiProperty({ description: 'User ID' })
-  user_id!: string;
-
-  @ApiProperty({ description: 'Member role' })
+  @ApiProperty({ description: 'Member role in workspace', example: 'member', enum: ['owner', 'admin', 'member'] })
   role!: string;
 
-  @ApiProperty({ description: 'Joined at timestamp' })
-  joined_at!: Date;
+  @ApiProperty({ description: 'When the user joined the workspace', example: '2024-01-10T09:00:00.000Z' })
+  joined_at!: string;
 }
 
 export class ListWorkspacesQueryDto {

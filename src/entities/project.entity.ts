@@ -12,6 +12,7 @@ import {
 import { Tenant } from './tenant.entity';
 import { Workspace } from './workspace.entity';
 import { Task } from './task.entity';
+import { User } from './user.entity';
 
 @Entity({ name: 'projects' })
 @Index(['tenant_id'])
@@ -45,6 +46,10 @@ export class Project {
 
   @Column('uuid')
   created_by!: string;
+
+  @ManyToOne(() => User, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'created_by', referencedColumnName: 'user_id' })
+  creator!: User;
 
   @CreateDateColumn()
   created_at!: Date;

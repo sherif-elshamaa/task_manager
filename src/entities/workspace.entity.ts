@@ -11,6 +11,7 @@ import {
 } from 'typeorm';
 import { Tenant } from './tenant.entity';
 import { Project } from './project.entity';
+import { User } from './user.entity';
 
 @Entity({ name: 'workspaces' })
 @Index(['tenant_id'])
@@ -37,6 +38,10 @@ export class Workspace {
 
   @Column('uuid')
   created_by!: string;
+
+  @ManyToOne(() => User, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'created_by', referencedColumnName: 'user_id' })
+  creator!: User;
 
   @CreateDateColumn()
   created_at!: Date;

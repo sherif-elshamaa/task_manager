@@ -71,6 +71,7 @@ export class TasksController {
   @ApiQuery({ name: 'search', required: false, type: String })
   @ApiQuery({ name: 'status', required: false, type: String })
   @ApiQuery({ name: 'priority', required: false, type: String })
+  @ApiQuery({ name: 'assigned_to', required: false, type: String })
   @ApiPaginatedResponse(TaskResponseDto, 'List of tasks')
   findAll(
     @Param('projectId') projectId: string,
@@ -80,6 +81,7 @@ export class TasksController {
     @Query('search') search?: string,
     @Query('status') status?: string,
     @Query('priority') priority?: string,
+    @Query('assigned_to') assignedTo?: string,
   ) {
     return this.tasksService.list({
       tenantId: user.tenantId!,
@@ -87,6 +89,7 @@ export class TasksController {
       status,
       priority,
       search,
+      assignedTo,
       page,
       limit,
     });

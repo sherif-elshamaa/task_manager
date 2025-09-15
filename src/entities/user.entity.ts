@@ -8,6 +8,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Exclude } from 'class-transformer';
 import { Tenant } from './tenant.entity';
 
 @Entity({ name: 'users' })
@@ -34,6 +35,7 @@ export class User {
   email!: string;
 
   @Column({ type: 'varchar', length: 255 })
+  @Exclude()
   password_hash!: string;
 
   @Column({ type: 'varchar', length: 32 })

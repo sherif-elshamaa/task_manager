@@ -53,8 +53,17 @@ export class WorkspacesService {
           role: 'owner',
         });
 
+        // Re-fetch with relations
+        const result = await this.workspacesRepo.findOne({
+          where: { workspace_id: saved.workspace_id },
+          relations: {
+            tenant: true,
+            creator: true,
+          },
+        });
+
         span.end();
-        return saved;
+        return result;
       },
     );
   }
@@ -85,6 +94,10 @@ export class WorkspacesService {
           skip: (page - 1) * limit,
           take: limit,
           order: { created_at: 'DESC' },
+          relations: {
+            tenant: true,
+            creator: true,
+          },
         });
         span.end();
         return { items, total, page, limit };
@@ -120,6 +133,10 @@ export class WorkspacesService {
           skip: (page - 1) * limit,
           take: limit,
           order: { created_at: 'DESC' },
+          relations: {
+            tenant: true,
+            creator: true,
+          },
         });
         span.end();
         return { items, total, page, limit };
@@ -147,6 +164,10 @@ export class WorkspacesService {
 
         const ws = await this.workspacesRepo.findOne({
           where: { workspace_id: key, tenant_id: tenantId },
+          relations: {
+            tenant: true,
+            creator: true,
+          },
         });
 
         span.end();
@@ -184,6 +205,10 @@ export class WorkspacesService {
         );
         const result = await this.workspacesRepo.findOne({
           where: { workspace_id: key, tenant_id: tenantId },
+          relations: {
+            tenant: true,
+            creator: true,
+          },
         });
 
         span.end();
@@ -332,6 +357,10 @@ export class WorkspacesService {
         );
         const result = await this.workspacesRepo.findOne({
           where: { workspace_id: workspaceId, tenant_id: tenantId },
+          relations: {
+            tenant: true,
+            creator: true,
+          },
         });
 
         span.end();
@@ -364,6 +393,10 @@ export class WorkspacesService {
         );
         const result = await this.workspacesRepo.findOne({
           where: { workspace_id: workspaceId, tenant_id: tenantId },
+          relations: {
+            tenant: true,
+            creator: true,
+          },
         });
 
         span.end();
@@ -392,13 +425,22 @@ export class WorkspacesService {
             workspace_id: workspaceId,
             tenant_id: tenantId,
           },
+          relations: ['user'], // Load user data
         });
 
         span.end();
         return {
           items: members.map((m) => ({
-            user_id: m.user_id,
+            user: {
+              user_id: m.user.user_id,
+              first_name: m.user.first_name,
+              last_name: m.user.last_name,
+              email: m.user.email,
+              is_active: m.user.is_active,
+              role: m.user.role
+            },
             role: m.role,
+            joined_at: m.joined_at.toISOString(),
           })),
         };
       },

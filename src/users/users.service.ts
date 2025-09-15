@@ -23,6 +23,43 @@ export class UsersService {
     return this.usersRepo.findOne({ where: { user_id: userId } });
   }
 
+  async findByIdWithTenant(userId: string): Promise<any> {
+    return this.tracer.startActiveSpan('UsersService.findByIdWithTenant', async (span) => {
+      const user = await this.usersRepo.findOne({
+        where: { user_id: userId },
+        relations: ['tenant']
+      });
+
+      if (!user) {
+        span.end();
+        return null;
+      }
+
+      // Transform to expanded format
+      const expandedUser = {
+        user_id: user.user_id,
+        email: user.email,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        roles: [user.role],
+        is_active: user.is_active,
+        tenant: {
+          tenant_id: user.tenant.tenant_id,
+          name: user.tenant.name,
+          plan: user.tenant.plan,
+          status: user.tenant.status
+        },
+        created_at: user.created_at.toISOString(),
+        updated_at: user.updated_at.toISOString(),
+        last_login: user.metadata?.last_login || null,
+        metadata: user.metadata
+      };
+
+      span.end();
+      return expandedUser;
+    });
+  }
+
   async createTenantWithOwner(input: {
     tenantName: string;
     firstName: string;

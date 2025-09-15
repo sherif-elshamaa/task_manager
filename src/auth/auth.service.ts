@@ -58,6 +58,10 @@ export class AuthService {
     return this.tracer.startActiveSpan('AuthService.login', async (span) => {
       span.setAttribute('user.email', email);
       const user = await this.validateUser(email, password);
+
+      // Get expanded user data with tenant info
+      const expandedUser = await this.users.findByIdWithTenant(user.user_id);
+
       const payload = {
         sub: user.user_id,
         email: user.email,
@@ -66,14 +70,28 @@ export class AuthService {
       };
       const accessToken = this.jwt.sign(payload);
       const refreshToken = await this.issueRefreshToken(user.user_id);
+
       span.end();
-      return { access_token: accessToken, refresh_token: refreshToken };
+      return {
+        access_token: accessToken,
+        refresh_token: refreshToken,
+        expires_in: 900, // 15 minutes
+        user: expandedUser
+      };
     });
   }
 
   // Compatibility with spec tests
   async logout(refreshTokenId: string) {
     return this.revokeById(refreshTokenId);
+  }
+
+  async getUserWithTenant(userId: string) {
+    return this.tracer.startActiveSpan('AuthService.getUserWithTenant', async (span) => {
+      const expandedUser = await this.users.findByIdWithTenant(userId);
+      span.end();
+      return expandedUser;
+    });
   }
 
   async signup(ownerDto: OwnerDto, tenantName: string) {

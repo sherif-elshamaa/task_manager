@@ -63,9 +63,19 @@ export class ProjectsService {
             tenantId,
             saved.workspace_id ?? undefined,
           );
+
+          // Re-fetch with relations
+          const result = await this.projectsRepo.findOne({
+            where: { project_id: saved.project_id },
+            relations: {
+          workspace: true,
+          creator: true,
+        },
+          });
+
           span.setAttribute('project.id', saved.project_id);
           span.end();
-          return saved;
+          return result;
         } catch (e) {
           const error = e instanceof Error ? e : new Error(String(e));
           this.logger.error(
@@ -122,8 +132,18 @@ export class ProjectsService {
         }
 
         const updatedProject = await this.projectsRepo.save(project);
+
+        // Re-fetch with relations
+        const result = await this.projectsRepo.findOne({
+          where: { project_id: updatedProject.project_id },
+          relations: {
+          workspace: true,
+          creator: true,
+        },
+        });
+
         span.end();
-        return updatedProject;
+        return result;
       },
     );
   }
@@ -151,6 +171,10 @@ export class ProjectsService {
         skip: offset,
         take: limit,
         order: { created_at: 'DESC' },
+        relations: {
+          workspace: true,
+          creator: true,
+        },
       });
       return { projects, total, page, limit };
     }
@@ -163,6 +187,10 @@ export class ProjectsService {
         skip: offset,
         take: limit,
         order: { created_at: 'DESC' },
+        relations: {
+          workspace: true,
+          creator: true,
+        },
       },
       'tenant.tenant_id',
     );
@@ -179,6 +207,8 @@ export class ProjectsService {
       limit?: number | string;
       page?: number | string;
       search?: string;
+      workspace?: string;
+      visibility?: 'private' | 'workspace' | 'tenant';
     };
   }) {
     const take = Number(query.limit ?? 10) || 10;
@@ -191,6 +221,12 @@ export class ProjectsService {
     if (query.search) {
       where.name = Like(`%${query.search}%`);
     }
+    if (query.workspace) {
+      where.workspace_id = query.workspace;
+    }
+    if (query.visibility) {
+      where.visibility = query.visibility;
+    }
 
     const [projects, total] = await findAndCountByTenant(
       this.projectsRepo,
@@ -200,6 +236,10 @@ export class ProjectsService {
         skip: offset,
         take,
         order: { created_at: 'DESC' },
+        relations: {
+          workspace: true,
+          creator: true,
+        },
       },
       'tenant.tenant_id',
     );
@@ -222,6 +262,10 @@ export class ProjectsService {
 
         const project = await this.projectsRepo.findOne({
           where: { project_id: id, tenant: { tenant_id: tenantId } },
+          relations: {
+          workspace: true,
+          creator: true,
+        },
         });
 
         if (!project) {

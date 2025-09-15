@@ -2,7 +2,8 @@ import 'reflect-metadata';
 import * as Sentry from '@sentry/node';
 import { NestFactory, HttpAdapterHost } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, ClassSerializerInterceptor } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
 import { Logger } from 'nestjs-pino';
 import helmet, { HelmetOptions } from 'helmet';
 import compression from 'compression';
@@ -58,6 +59,9 @@ async function bootstrap() {
       disableErrorMessages: config.get('NODE_ENV') === 'production',
     }),
   );
+
+  // Global serializer interceptor to enable @Exclude() decorators
+  app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
 
   // CORS configuration
   app.enableCors({
