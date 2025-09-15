@@ -516,49 +516,7 @@ Note: If you want unauthenticated probes, add `@Public()` or guard exclusions.
 }
 ```
 
-### PATCH `/v1/workspaces/:id/archive` — Protected
-**Response:**
-```typescript
-{
-  workspace_id: string;
-  tenant_id: string;
-  name: string;
-  description?: string;
-  is_archived: boolean;             // true after archiving
-  creator: {
-    user_id: string;
-    first_name: string;
-    last_name: string;
-    email: string;
-    is_active: boolean;
-    role: string;
-  };
-  created_at: string;
-  updated_at: string;
-}
-```
 
-### PATCH `/v1/workspaces/:id/unarchive` — Protected
-**Response:**
-```typescript
-{
-  workspace_id: string;
-  tenant_id: string;
-  name: string;
-  description?: string;
-  is_archived: boolean;             // false after unarchiving
-  creator: {
-    user_id: string;
-    first_name: string;
-    last_name: string;
-    email: string;
-    is_active: boolean;
-    role: string;
-  };
-  created_at: string;
-  updated_at: string;
-}
-```
 
 ## ProjectsController — base `/projects` (`api/src/projects/projects.controller.ts`)
 

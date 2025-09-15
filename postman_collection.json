@@ -841,32 +841,6 @@
             }
           },
           "response": []
-        },
-        {
-          "name": "Archive Workspace",
-          "request": {
-            "method": "PATCH",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/workspaces/550e8400-e29b-41d4-a716-446655440000/archive",
-              "host": ["{{baseUrl}}"],
-              "path": ["workspaces", "550e8400-e29b-41d4-a716-446655440000", "archive"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Unarchive Workspace",
-          "request": {
-            "method": "PATCH",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/workspaces/550e8400-e29b-41d4-a716-446655440000/unarchive",
-              "host": ["{{baseUrl}}"],
-              "path": ["workspaces", "550e8400-e29b-41d4-a716-446655440000", "unarchive"]
-            }
-          },
-          "response": []
         }
       ]
     },
